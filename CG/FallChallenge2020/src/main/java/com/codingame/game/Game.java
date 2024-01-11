@@ -1,40 +1,73 @@
-#pragma once
-#include <string>
-#include <vector>
 
-#include "Speel.h"
+package com.codingame.game;
 
-class Game {
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
-    int READ_AHEAD_COST = 1;
-    int STARTING_SCORE = 0;
-    int MAX_SPACE = 10;
-    int INGREDIENT_TYPE_COUNT = 4;
-    int COUNTER_SIZE = 5;
-    int TOME_SIZE = 6;
+import com.codingame.game.action.Action;
+import com.codingame.game.spell.DeliverySpell;
+import com.codingame.game.spell.PlayerSpell;
+import com.codingame.game.spell.Spell;
+import com.codingame.game.spell.SpellType;
+import com.codingame.game.spell.TomeSpell;
+import com.codingame.gameengine.core.MultiplayerGameManager;
+import com.codingame.gameengine.core.Tooltip;
+import com.codingame.view.AnimationData;
+import com.codingame.view.BonusData;
+import com.codingame.view.EventData;
+import com.codingame.view.SpellData;
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
-    int STARTING_INGREDIENT_COUNT[4];
-    int DELIVERY_GOAL;
-    bool ACTIVE_TOME;
-    bool ACTIVE_SPELLS;
-    bool ACTIVE_BONUS;
-    bool INVENTORY_BONUS;
+@Singleton
+public class Game {
 
-    std::vector<TomeSpell> tome;
-    std::vector<DeliverySpell> deliveries;
-    std::vector<DeliverySpell> newDeliveries;
-    std::vector<TomeSpell> newTomeSpells;
-    Random random;
-    int tomeStockGain[];
-    Deck deck;
-    int bonus[];
-    int bonusValue[2] = { 3, 1 };
-    int frameDuration;
-    std::vector<TomeSpell> learntSpells;
-    std::vector<DeliveryCompletion> delivered;
-    std::vector<EventData> viewerEvents;
+    public static final int READ_AHEAD_COST = 1;
+    public static final int STARTING_SCORE = 0;
+    public static final int MAX_SPACE = 10;
+    public static final int INGREDIENT_TYPE_COUNT = 4;
+    public static final int COUNTER_SIZE = 5;
+    public static final int TOME_SIZE = 6;
 
-    void slideBonus() {
+    public static int[] STARTING_INGREDIENT_COUNT;
+    public static int DELIVERY_GOAL;
+    public static boolean ACTIVE_TOME;
+    public static boolean ACTIVE_SPELLS;
+    public static boolean ACTIVE_BONUS;
+    public static boolean INVENTORY_BONUS;
+
+    @Inject private MultiplayerGameManager<Player> gameManager;
+    @Inject private GameSummaryManager gameSummaryManager;
+
+    private List<TomeSpell> tome;
+    private List<DeliverySpell> deliveries;
+    private List<DeliverySpell> newDeliveries;
+    private List<TomeSpell> newTomeSpells;
+    private Random random;
+    private int[] tomeStockGain;
+    private Deck deck;
+    private int[] bonus;
+    private int[] bonusValue = new int[] { 3, 1 };
+    private int frameDuration;
+    Set<TomeSpell> learntSpells = new HashSet<>();
+    Set<DeliveryCompletion> delivered = new HashSet<>();
+    private List<EventData> viewerEvents;
+
+    private void slideBonus() {
         if (bonus[0] <= 0) {
             bonus[0] = bonus[1];
             bonus[1] = 0;
@@ -43,7 +76,7 @@ class Game {
         }
     }
 
-    int getScoreOf(DeliverySpell delivery) {
+    private int getScoreOf(DeliverySpell delivery) {
         int index = deliveries.indexOf(delivery);
         int bonusScore = 0;
         if (index < 2) {
@@ -55,10 +88,9 @@ class Game {
         return delivery.getScore() + bonusScore;
     }
 
-    void init(long seed) {
+    public void init(long seed) {
         deck = new Deck();
 
-        /*
         switch (gameManager.getLeagueLevel()) {
         case 1:
             // Wood 2
@@ -94,15 +126,13 @@ class Game {
             break;
         default:
             // Bronze+
+            STARTING_INGREDIENT_COUNT = new int[] { 3, 0, 0, 0 };
+            DELIVERY_GOAL = 6;
+            ACTIVE_TOME = true;
+            ACTIVE_SPELLS = true;
+            ACTIVE_BONUS = true;
+            INVENTORY_BONUS = true;
         }
-        */
-
-        STARTING_INGREDIENT_COUNT = { 3, 0, 0, 0 };
-        DELIVERY_GOAL = 6;
-        ACTIVE_TOME = true;
-        ACTIVE_SPELLS = true;
-        ACTIVE_BONUS = true;
-        INVENTORY_BONUS = true;
 
         bonus = ACTIVE_BONUS ? new int[] { 4, 4 } : new int[] { 0, 0 };
         viewerEvents = new ArrayList<>();

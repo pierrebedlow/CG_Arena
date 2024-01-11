@@ -13,12 +13,14 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <poll.h>
-#include <omp.h>
+//#include <omp.h>
 #include <algorithm>
 #include <thread>
 //using namespace std;
 //using namespace std::chrono;
 
+
+// Number of Bots in game
 constexpr int N = 2;
 
 struct GameOutput {
@@ -29,7 +31,7 @@ struct GameOutput {
 };  
 
 
-class Game {
+class GameReferee {
 
 public:
     GameOutput Play_Game(std::array<std::string,N> Bot_Names) {

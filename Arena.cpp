@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <poll.h>
-#include <omp.h>
+//#include <omp.h>
 #include <algorithm>
 #include <thread>
 
@@ -159,12 +159,12 @@ int main(int argc,char **argv){
     }
     int N_Threads{1};
     if(argc>=3){//Optional N_Threads parameter
-        N_Threads=std::min(2*omp_get_num_procs(),std::max(1,atoi(argv[2])));
+        N_Threads=std::min(2 * omp_get_num_procs(),std::max(1,atoi(argv[2])));
         std::cerr << "Running " << N_Threads << " arena threads" << std::endl;
     }
 
     std::array<std::string,N> Bot_Names;
-    Game game;
+    GameReferee game;
 
     for(int i=0;i<N;++i){
         Bot_Names[i]=argv[i+1];

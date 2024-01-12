@@ -10,15 +10,19 @@ enum class SpellType {
     BREW
 };
 
-static int INSTANCE_COUNT = 0;
+
 
 class Spell {
 
+static int INSTANCE_COUNT;
+
 public:
     Recipe recipe;
-    int id = INSTANCE_COUNT++;
+    int id;
 
+    Spell() { id = INSTANCE_COUNT++; }
     int getId() { return id; }
+    Recipe getRecipe() { return recipe; }
     int getScore() { return 0; }
     int getStock() { return -1; }
     bool isActive() { return false; }
@@ -28,7 +32,9 @@ public:
     std::string toString() { return std::to_string(id); }
 };
 
-class DeliverySpell : Spell {
+int Spell::INSTANCE_COUNT = 0;
+
+class DeliverySpell : public Spell {
 
 public:    
     int score;
@@ -44,7 +50,7 @@ public:
 
 };
 
-class TomeSpell : Spell {
+class TomeSpell : public Spell {
 
 public:
     int stock;
@@ -69,7 +75,7 @@ public:
 };
 
 
-class PlayerSpell : Spell {
+class PlayerSpell : public Spell {
 
 public:
     bool active;
@@ -88,7 +94,7 @@ public:
     }
 
     PlayerSpell(TomeSpell* learnt, Player* owner) {
-        PlayerSpell(Recipe(learnt->recipe), owner, learnt->isRepeatable());
+        PlayerSpell(Recipe(learnt->getRecipe()), owner, learnt->isRepeatable());
     }
 
     bool isActive() {

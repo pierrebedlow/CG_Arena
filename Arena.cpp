@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <sys/ioctl.h>
 #include <poll.h>
-//#include <omp.h>
+#include <omp.h>
 #include <algorithm>
 #include <thread>
 
@@ -164,7 +164,7 @@ int main(int argc,char **argv){
     }
 
     std::array<std::string,N> Bot_Names;
-    GameReferee game;
+    ArenaReferee game;
 
     for(int i=0;i<N;++i){
         Bot_Names[i]=argv[i+1];

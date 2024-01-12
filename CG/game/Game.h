@@ -1,38 +1,39 @@
 #pragma once
 #include <string>
+#include <array>
 #include <vector>
 
-#include "Speel.h"
+#include "Spell.h"
+#include "Deck.h"
+
+constexpr int READ_AHEAD_COST = 1;
+constexpr int STARTING_SCORE = 0;
+constexpr int MAX_SPACE = 10;
+constexpr int INGREDIENT_TYPE_COUNT = 4;
+constexpr int COUNTER_SIZE = 5;
+constexpr int TOME_SIZE = 6;
+
+int STARTING_INGREDIENT_COUNT[4] = { 3, 0, 0, 0 };
 
 class Game {
 
-    int READ_AHEAD_COST = 1;
-    int STARTING_SCORE = 0;
-    int MAX_SPACE = 10;
-    int INGREDIENT_TYPE_COUNT = 4;
-    int COUNTER_SIZE = 5;
-    int TOME_SIZE = 6;
-
-    int STARTING_INGREDIENT_COUNT[4];
-    int DELIVERY_GOAL;
-    bool ACTIVE_TOME;
-    bool ACTIVE_SPELLS;
-    bool ACTIVE_BONUS;
-    bool INVENTORY_BONUS;
+public:
 
     std::vector<TomeSpell> tome;
     std::vector<DeliverySpell> deliveries;
     std::vector<DeliverySpell> newDeliveries;
     std::vector<TomeSpell> newTomeSpells;
-    Random random;
-    int tomeStockGain[];
+    
+    //int tomeStockGain[TOME_SIZE];
+    std::array<int, TOME_SIZE> tomeStockGain;
+    
     Deck deck;
-    int bonus[];
+    int bonus[2] = { 4, 4 };
     int bonusValue[2] = { 3, 1 };
     int frameDuration;
     std::vector<TomeSpell> learntSpells;
-    std::vector<DeliveryCompletion> delivered;
-    std::vector<EventData> viewerEvents;
+    //std::vector<DeliveryCompletion> delivered;
+
 
     void slideBonus() {
         if (bonus[0] <= 0) {
@@ -44,7 +45,8 @@ class Game {
     }
 
     int getScoreOf(DeliverySpell delivery) {
-        int index = deliveries.indexOf(delivery);
+        int index = (deliveries[0].getId() == delivery.getId()) ? 0 : ((deliveries[1].getId() == delivery.getId()) ? 1 : 2);
+        
         int bonusScore = 0;
         if (index < 2) {
             if (bonus[index] > 0) {
@@ -55,96 +57,48 @@ class Game {
         return delivery.getScore() + bonusScore;
     }
 
-    void init(long seed) {
-        deck = new Deck();
+    void init(long seed, std::vector<Player>& players) {
 
-        /*
-        switch (gameManager.getLeagueLevel()) {
-        case 1:
-            // Wood 2
-            STARTING_INGREDIENT_COUNT = new int[] { 2, 2, 3, 3 };
-            DELIVERY_GOAL = 2;
-            ACTIVE_TOME = false;
-            ACTIVE_SPELLS = false;
-            ACTIVE_BONUS = false;
-            INVENTORY_BONUS = false;
-            deck.deliveries.stream()
-                .filter(del -> {
-                    return IntStream.of(del.getDelta())
-                        .anyMatch(count -> count < -1);
-                })
-                .forEach(del -> {
-                    for (int i = 0; i < INGREDIENT_TYPE_COUNT; ++i) {
-                        del.getDelta()[i] /= 2;
-                    }
-                });
-            Set<Recipe> deltas = new HashSet<>();
-            deck.deliveries = deck.deliveries.stream()
-                .filter(del -> deltas.add(del.recipe))
-                .collect(Collectors.toCollection(LinkedList::new));
-            break;
-        case 2:
-            // Wood 1
-            STARTING_INGREDIENT_COUNT = new int[] { 3, 0, 0, 0 };
-            DELIVERY_GOAL = 3;
-            ACTIVE_TOME = false;
-            ACTIVE_SPELLS = true;
-            ACTIVE_BONUS = false;
-            INVENTORY_BONUS = true;
-            break;
-        default:
-            // Bronze+
+        std::default_random_engine generator(seed);
+
+        deck = Deck();
+
+        std::shuffle(deck.tome.begin(),deck.tome.end(),generator);
+        std::shuffle(deck.deliveries.begin(),deck.deliveries.end(),generator);
+
+        tome.clear();
+        deliveries.clear();
+        newDeliveries.clear();
+        newTomeSpells.clear();
+        tomeStockGain.fill(0);
+        
+        for (int i = 0; i < TOME_SIZE; ++i) {
+            tome.push_back(deck.tome.back());
+            deck.tome.pop_back();
+            tomeStockGain[i] = 0;
         }
-        */
-
-        STARTING_INGREDIENT_COUNT = { 3, 0, 0, 0 };
-        DELIVERY_GOAL = 6;
-        ACTIVE_TOME = true;
-        ACTIVE_SPELLS = true;
-        ACTIVE_BONUS = true;
-        INVENTORY_BONUS = true;
-
-        bonus = ACTIVE_BONUS ? new int[] { 4, 4 } : new int[] { 0, 0 };
-        viewerEvents = new ArrayList<>();
-        random = new Random(seed);
-
-        Collections.shuffle(deck.tome, random);
-        Collections.shuffle(deck.deliveries, random);
-
-        tome = new ArrayList<>();
-        deliveries = new ArrayList<>();
-        newDeliveries = new ArrayList<>();
-        newTomeSpells = new ArrayList<>();
-        tomeStockGain = new int[Game.TOME_SIZE];
-
-        if (ACTIVE_TOME) {
-            for (int i = 0; i < TOME_SIZE; ++i) {
-                tome.add(deck.tome.poll());
-                tomeStockGain[i] = 0;
-            }
-        }
+        
         for (int i = 0; i < COUNTER_SIZE; ++i) {
-            deliveries.add(deck.deliveries.poll());
+            deliveries.push_back(deck.deliveries.back());
+            deck.deliveries.pop_back();
         }
 
-        for (Player p : gameManager.getPlayers()) {
+        for (Player& p : players) {
             for (int i = 0; i < INGREDIENT_TYPE_COUNT; ++i) {
-                p.getInventory().delta[i] = STARTING_INGREDIENT_COUNT[i];
+                p.inventory.delta[i] = STARTING_INGREDIENT_COUNT[i];
             }
-            p.setScore(STARTING_SCORE);
-            if (ACTIVE_SPELLS) {
-                p.initSpells();
-            }
+            p.score = STARTING_SCORE;
+            p.initSpells();
         }
     }
 
-    public int getBonusValue(DeliverySpell spell) {
+    int getBonusValue(DeliverySpell spell) {
         if (getBonusAmount(spell) == 0) {
             return 0;
         }
 
-        int index = deliveries.indexOf(spell);
-
+        int index = (deliveries[0].getId() == spell.getId()) ? 0 : ((deliveries[1].getId() == spell.getId()) ? 1 : 2);
+        
         if (index < 0 || index > 1) {
             return 0;
         }
@@ -152,9 +106,9 @@ class Game {
         return bonusValue[index];
     }
 
-    public int getBonusAmount(DeliverySpell spell) {
-        int index = deliveries.indexOf(spell);
-
+    int getBonusAmount(DeliverySpell spell) {
+        int index = (deliveries[0].getId() == spell.getId()) ? 0 : ((deliveries[1].getId() == spell.getId()) ? 1 : 2);
+        
         if (index < 0 || index > 1) {
             return 0;
         }
@@ -162,7 +116,7 @@ class Game {
         return bonus[index];
     }
 
-    public List<String> getCurrentFrameInfoFor(Player player) {
+    std::vector<std::string> getCurrentFrameInfoFor(Player player) {
 
         Player foe = gameManager.getPlayer(1 - player.getIndex());
         List<String> lines = new ArrayList<>();
@@ -221,29 +175,29 @@ class Game {
         return lines;
     }
 
-    private int getScoreOf(Spell spell) {
+    int getScoreOf(Spell spell) {
         if (spell instanceof DeliverySpell) {
             return getScoreOf((DeliverySpell) spell);
         }
         return spell.getScore();
     }
 
-    private SpellType getSpellType(Spell spell, Player player) {
+    SpellType getSpellType(Spell spell, Player* player) {
         if (spell instanceof TomeSpell) {
-            return SpellType.LEARN;
+            return SpellType::LEARN;
         } else if (spell instanceof DeliverySpell) {
-            return SpellType.BREW;
+            return SpellType::BREW;
         } else {
             if (spell.isOwner(player)) {
-                return SpellType.CAST;
+                return SpellType::CAST;
             } else {
-                return SpellType.OPPONENT_CAST;
+                return SpellType::OPPONENT_CAST;
 
             }
         }
     }
 
-    public void checkSpellActionType(Action action, SpellType type) throws GameException {
+    void checkSpellActionType(Action action, SpellType type) throws GameException {
         String expectedStr = null;
 
         switch (type) {

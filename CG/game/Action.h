@@ -1,7 +1,6 @@
 #pragma once
 #include <string>
 
-
 class Action {
 public:
     int spellId;
@@ -11,27 +10,16 @@ public:
         this->str = "NO_ACTION";
     }
 
-    std::string getStr() {
-        return str;
-    }
+    std::string getStr() { return str; }
 
-    bool isSpell() {
-        return false;
-    }
-
-     bool isReset() {
-        return false;
-    }
-
-    bool isWait() {
-        return false;
-    }
-
-    int getRepeats() {
-        return 1;
-    }
+    bool isSpell() { return false; }
+    bool isReset() { return false; }
+    bool isWait() { return false; }
+    int getRepeats() { return 1; }
 
 };
+
+Action NO_ACTION;
 
 class ResetAction : Action {
 

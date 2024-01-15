@@ -35,7 +35,7 @@ public:
 int Spell::INSTANCE_COUNT = 0;
 
 class DeliverySpell : public Spell {
-
+   
 public:    
     int score;
 

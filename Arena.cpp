@@ -26,34 +26,38 @@ bool stop{false};//Global flag to stop all arena threads when SIGTERM is receive
 
 struct AI{
 
-    int id,pid,outPipe,errPipe,inPipe;
+    int id, pid, outPipe, errPipe, inPipe;
     std::string name;
     
     //pod p;
     inline void stop(){
         if(alive()){
-            kill(pid,SIGTERM);
+            kill(pid, SIGTERM);
             int status;
-            waitpid(pid,&status,0);//It is necessary to read the exit code for the process to stop
+            waitpid(pid, &status, 0);//It is necessary to read the exit code for the process to stop
             if(!WIFEXITED(status)){//If not exited normally try to "kill -9" the process
-                kill(pid,SIGKILL);
+                kill(pid, SIGKILL);
             }
         }
     }
+
     inline bool alive()const{
         return kill(pid,0)!=-1;//Check if process is still running
     }
+
     inline void Feed_Inputs(const std::string &inputs){
         if(write(inPipe,&inputs[0],inputs.size())!=inputs.size()){
             throw(5);
         }
     }
+
     inline ~AI(){
         close(errPipe);
         close(outPipe);
         close(inPipe);
         stop();
     }
+    
 };
 
 void StartProcess(AI &Bot){

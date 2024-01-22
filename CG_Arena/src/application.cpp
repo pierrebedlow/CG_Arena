@@ -1,4 +1,5 @@
 #include "application.hpp"
+#include "CG_Game.hpp"
 
 #include <iostream>
 
@@ -9,9 +10,11 @@ Application::Application()
 
 bool Application::run()
 {
+    State state;
 
     while (m_Running) {
 
+        std::cout << state << std::endl;
         std::cout << "What do you want to do?" << std::endl;
         std::cout << "  0 - Exit" << std::endl;
         std::cin >> m_UserAction; 

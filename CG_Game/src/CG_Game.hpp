@@ -11,13 +11,16 @@ public:
     State();
     ~State();
 
+
 };
+
+std::ostream& operator<<(std::ostream&, const State&);
 
 class GameAPI
 {
 public:
+    int Game;
     
-    
-
 
 };
+

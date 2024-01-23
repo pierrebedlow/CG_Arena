@@ -1,5 +1,5 @@
 #include "application.hpp"
-#include "CG_Game.hpp"
+#include "../../CG_Game/src/CG_Game.hpp"
 
 #include <iostream>
 
@@ -14,15 +14,18 @@ bool Application::run()
 
     while (m_Running) {
 
-        std::cout << state << std::endl;
         std::cout << "What do you want to do?" << std::endl;
         std::cout << "  0 - Exit" << std::endl;
+        std::cout << "  1 - Display State" << std::endl;
         std::cin >> m_UserAction; 
 
         switch(m_UserAction)
         {
             case 0:
                 m_Running = false;
+                break;
+            case 1:
+                std::cout << "Cuurent State\n" << state << std::endl;
                 break;
             default:
                 break;

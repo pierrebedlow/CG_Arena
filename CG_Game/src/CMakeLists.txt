@@ -1,0 +1,1 @@
+add_library(CG_Game CG_Game.cpp)

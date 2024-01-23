@@ -1,10 +1,30 @@
-cmake_minimum_required(VERSION 3.28.0)
+cmake_minimum_required(VERSION 3.28.1)
 
-set(CMAKE_CXX_STANDARD 20)
-set(project_name CG_Arena)
+#set(CMAKE_CXX_STANDARD 20)
 
-project(${project_name} LANGUAGES CXX)
+project(CG_Arena LANGUAGES CXX)
 
-add_executable(${project_name} "/home/pedro/dev/CG_Arena/CG_Arena/src/main.cpp")
+add_subdirectory(CG_Game/src)
+#add_subdirectory(CG_Cockpit/src)
 
-target_include_directories(${project_name} PUBLIC "/home/pedro/dev/CG_Arena/CG_Game" "/home/pedro/dev/CG_Arena/CG_Arena/src")
+add_executable(${PROJECT_NAME}
+    src/main.cpp
+    src/application.cpp 
+)
+
+find_package(OpenGL REQUIRED)
+
+target_include_directories(${PROJECT_NAME}
+    PUBLIC "CG_Game/src"
+    #PUBLIC "CG_Cockpit/src"
+)
+
+target_link_directories(${PROJECT_NAME}
+    PRIVATE CG_Game/src
+    #PRIVATE CG_Cockpit
+)
+
+target_link_libraries(${PROJECT_NAME}
+    CG_Game
+    #CG_Cockpit
+)

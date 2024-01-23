@@ -12,5 +12,5 @@ int main()
 
     application.run();
 
-    return 0;
+    return EXIT_SUCCESS;
 }
